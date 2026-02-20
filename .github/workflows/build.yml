@@ -1,0 +1,70 @@
+name: Build CaptainDrift
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+    branches: [master]
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Configure CMake
+        run: cmake -B build -G "Visual Studio 17 2022" -A x64
+
+      - name: Build
+        run: cmake --build build --config Release
+
+      - name: Prepare Windows VST3 artifact
+        shell: bash
+        run: |
+          mkdir -p staging
+          cp -r build/CaptainDrift_artefacts/Release/VST3/CaptainDrift.vst3 staging/
+          cd staging && 7z a -tzip ../CaptainDrift-Windows-VST3.zip CaptainDrift.vst3
+
+      - name: Upload Windows VST3
+        uses: actions/upload-artifact@v4
+        with:
+          name: CaptainDrift-Windows-VST3
+          path: CaptainDrift-Windows-VST3.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build-windows]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - name: Download Windows artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: CaptainDrift-Windows-VST3
+
+      - name: List files
+        run: ls -la
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v2
+        with:
+          name: CaptainDrift ${{ github.ref_name }}
+          body: |
+            ## CaptainDrift ${{ github.ref_name }}
+
+            Generative MIDI engine for infinite ambient pads.
+            Steve Reich-inspired phase-shifting with microtonal support.
+
+            ### Installation
+
+            **Windows (VST3):** Unzip and copy the `CaptainDrift.vst3` folder to `C:\Program Files\Common Files\VST3\`
+            Then rescan plugins in your DAW (Reaper, Ableton, Bitwig, etc.)
+
+            **macOS:** Build from source (see README) or use the locally built version.
+
+            ### Usage
+
+            CaptainDrift generates MIDI output. Route it to a synth plugin to hear the generated pads.
+          files: CaptainDrift-Windows-VST3.zip
