@@ -1,5 +1,6 @@
 build/
 build-xcode/
+JUCE/
 .DS_Store
 *.user
 *.xcuserdata

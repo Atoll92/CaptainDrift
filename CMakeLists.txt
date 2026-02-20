@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(CaptainDrift VERSION 1.0.0 LANGUAGES CXX)
+project(CaptainDrift VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -7,15 +7,20 @@ set(CMAKE_CXX_STANDARD_REQUIRED ON)
 # Build universal binary (arm64 + x86_64) for Rosetta compatibility
 set(CMAKE_OSX_ARCHITECTURES "arm64;x86_64")
 
-# --- Fetch JUCE ---
-include(FetchContent)
-FetchContent_Declare(
-    juce
-    GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
-    GIT_TAG        8.0.4
-    GIT_SHALLOW    TRUE
-)
-FetchContent_MakeAvailable(juce)
+# --- JUCE ---
+# Use local JUCE copy for macOS, FetchContent for CI/Windows
+if(EXISTS "${CMAKE_CURRENT_SOURCE_DIR}/JUCE/CMakeLists.txt")
+    add_subdirectory(JUCE)
+else()
+    include(FetchContent)
+    FetchContent_Declare(
+        juce
+        GIT_REPOSITORY https://github.com/juce-framework/JUCE.git
+        GIT_TAG        8.0.4
+        GIT_SHALLOW    TRUE
+    )
+    FetchContent_MakeAvailable(juce)
+endif()
 
 # --- Plugin Target ---
 juce_add_plugin(CaptainDrift
@@ -28,7 +33,7 @@ juce_add_plugin(CaptainDrift
     PLUGIN_NAME           "CaptainDrift"
     DESCRIPTION           "Generative MIDI engine for infinite ambient pads"
     IS_SYNTH              TRUE
-    NEEDS_MIDI_INPUT      FALSE
+    NEEDS_MIDI_INPUT      TRUE
     NEEDS_MIDI_OUTPUT     TRUE
     IS_MIDI_EFFECT        FALSE
     COPY_PLUGIN_AFTER_BUILD TRUE

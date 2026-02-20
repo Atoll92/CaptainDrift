@@ -13,7 +13,7 @@ CaptainDriftProcessor::~CaptainDriftProcessor() {}
 
 const juce::String CaptainDriftProcessor::getName() const { return "CaptainDrift"; }
 
-bool CaptainDriftProcessor::acceptsMidi()  const { return false; }
+bool CaptainDriftProcessor::acceptsMidi()  const { return true; }
 bool CaptainDriftProcessor::producesMidi() const { return true; }
 bool CaptainDriftProcessor::isMidiEffect() const { return false; }
 double CaptainDriftProcessor::getTailLengthSeconds() const { return 0.0; }
