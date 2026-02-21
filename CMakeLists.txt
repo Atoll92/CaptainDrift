@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.22)
-project(CaptainDrift VERSION 1.0.0 LANGUAGES C CXX)
+project(Kikinator VERSION 1.0.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
@@ -22,15 +22,21 @@ else()
     FetchContent_MakeAvailable(juce)
 endif()
 
+# --- Binary Data (background image) ---
+juce_add_binary_data(KikinatorBinaryData
+    SOURCES
+        Source/Resources/background.png
+)
+
 # --- Plugin Target ---
-juce_add_plugin(CaptainDrift
-    COMPANY_NAME          "CaptainDriftAudio"
-    BUNDLE_ID             "com.captaindriftaudio.captaindrift"
+juce_add_plugin(Kikinator
+    COMPANY_NAME          "KikinatorAudio"
+    BUNDLE_ID             "com.kikinatoraudio.kikinator"
     PLUGIN_MANUFACTURER_CODE Vlnt
-    PLUGIN_CODE           Cdft
+    PLUGIN_CODE           Kikn
     FORMATS               VST3 AU Standalone
-    PRODUCT_NAME          "CaptainDrift"
-    PLUGIN_NAME           "CaptainDrift"
+    PRODUCT_NAME          "Kikinator"
+    PLUGIN_NAME           "Kikinator"
     DESCRIPTION           "Generative MIDI engine for infinite ambient pads"
     IS_SYNTH              TRUE
     NEEDS_MIDI_INPUT      TRUE
@@ -39,7 +45,7 @@ juce_add_plugin(CaptainDrift
     COPY_PLUGIN_AFTER_BUILD TRUE
 )
 
-target_sources(CaptainDrift PRIVATE
+target_sources(Kikinator PRIVATE
     Source/PluginProcessor.cpp
     Source/PluginEditor.cpp
     Source/Engine/ParameterLayout.cpp
@@ -49,21 +55,24 @@ target_sources(CaptainDrift PRIVATE
     Source/Engine/MicrotonalPitchBend.cpp
     Source/Engine/DriftVoice.cpp
     Source/Engine/GenerativeEngine.cpp
+    Source/Engine/PadSynth.cpp
     Source/GUI/DriftLookAndFeel.cpp
     Source/GUI/DriftBackground.cpp
+    Source/GUI/MidiVisualizer.cpp
 )
 
-target_include_directories(CaptainDrift PRIVATE Source)
+target_include_directories(Kikinator PRIVATE Source)
 
-target_compile_definitions(CaptainDrift PUBLIC
+target_compile_definitions(Kikinator PUBLIC
     JUCE_WEB_BROWSER=0
     JUCE_USE_CURL=0
     JUCE_VST3_CAN_REPLACE_VST2=0
     JUCE_DISPLAY_SPLASH_SCREEN=0
 )
 
-target_link_libraries(CaptainDrift
+target_link_libraries(Kikinator
     PRIVATE
+        KikinatorBinaryData
         juce::juce_audio_utils
         juce::juce_gui_extra
     PUBLIC

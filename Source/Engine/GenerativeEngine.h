@@ -33,6 +33,10 @@ public:
     void processBlock (juce::MidiBuffer& midiBuffer, int numSamples,
                        juce::AudioPlayHead* playHead);
 
+    /** Query voice activity (safe for GUI polling). */
+    int getVoiceNote (int index) const;
+    bool isVoiceActive (int index) const;
+
 private:
     double sampleRate = 44100.0;
 
@@ -52,6 +56,8 @@ private:
     double internalBeatPosition = 0.0;
     float internalBPM = 60.0f;
     bool wasPlaying = false;
+    bool generationEnabled = true;
+    bool wasGenerationEnabled = true;
 
     // Cached parameters
     float paramFlotsam = 1.0f;

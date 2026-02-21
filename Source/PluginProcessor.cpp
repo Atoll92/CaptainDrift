@@ -11,12 +11,12 @@ CaptainDriftProcessor::CaptainDriftProcessor()
 
 CaptainDriftProcessor::~CaptainDriftProcessor() {}
 
-const juce::String CaptainDriftProcessor::getName() const { return "CaptainDrift"; }
+const juce::String CaptainDriftProcessor::getName() const { return "Kikinator"; }
 
 bool CaptainDriftProcessor::acceptsMidi()  const { return true; }
 bool CaptainDriftProcessor::producesMidi() const { return true; }
 bool CaptainDriftProcessor::isMidiEffect() const { return false; }
-double CaptainDriftProcessor::getTailLengthSeconds() const { return 0.0; }
+double CaptainDriftProcessor::getTailLengthSeconds() const { return 5.0; }
 
 int CaptainDriftProcessor::getNumPrograms()    { return 1; }
 int CaptainDriftProcessor::getCurrentProgram() { return 0; }
@@ -26,7 +26,6 @@ void CaptainDriftProcessor::changeProgramName (int, const juce::String&) {}
 
 bool CaptainDriftProcessor::isBusesLayoutSupported (const BusesLayout& layouts) const
 {
-    // We output stereo audio (silence) + MIDI
     if (layouts.getMainOutputChannelSet() != juce::AudioChannelSet::stereo())
         return false;
 
@@ -36,17 +35,19 @@ bool CaptainDriftProcessor::isBusesLayoutSupported (const BusesLayout& layouts) 
 void CaptainDriftProcessor::prepareToPlay (double sampleRate, int samplesPerBlock)
 {
     engine.prepare (sampleRate, samplesPerBlock);
+    padSynth.prepare (sampleRate, samplesPerBlock);
 }
 
 void CaptainDriftProcessor::releaseResources()
 {
     engine.reset();
+    padSynth.reset();
 }
 
 void CaptainDriftProcessor::processBlock (juce::AudioBuffer<float>& buffer,
                                            juce::MidiBuffer& midiMessages)
 {
-    // Clear audio output (we only generate MIDI)
+    // Clear audio output
     buffer.clear();
 
     // Clear incoming MIDI (we generate our own)
@@ -57,6 +58,13 @@ void CaptainDriftProcessor::processBlock (juce::AudioBuffer<float>& buffer,
 
     // Generate MIDI events
     engine.processBlock (midiMessages, buffer.getNumSamples(), getPlayHead());
+
+    // Update voice activity for visualizer
+    for (int i = 0; i < GenerativeEngine::kMaxVoices; ++i)
+        voiceNotes[i].store (engine.getVoiceNote (i), std::memory_order_relaxed);
+
+    // Render the generated MIDI through the built-in pad synth
+    padSynth.processBlock (buffer, midiMessages);
 }
 
 bool CaptainDriftProcessor::hasEditor() const { return true; }

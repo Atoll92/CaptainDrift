@@ -1,6 +1,7 @@
 #pragma once
 #include <juce_audio_processors/juce_audio_processors.h>
 #include "Engine/GenerativeEngine.h"
+#include "Engine/PadSynth.h"
 
 class CaptainDriftProcessor : public juce::AudioProcessor
 {
@@ -36,8 +37,12 @@ public:
 
     juce::AudioProcessorValueTreeState apvts;
 
+    // Voice activity data for GUI visualizer (written on audio thread, read on GUI thread)
+    std::atomic<int> voiceNotes[GenerativeEngine::kMaxVoices] = {};
+
 private:
     GenerativeEngine engine;
+    PadSynth padSynth;
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (CaptainDriftProcessor)
 };

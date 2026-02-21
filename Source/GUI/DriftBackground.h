@@ -8,5 +8,6 @@ public:
     void paint (juce::Graphics& g) override;
 
 private:
+    juce::Image backgroundImage;
     void drawCompassRose (juce::Graphics& g, float centreX, float centreY, float size);
 };

@@ -45,6 +45,7 @@ void GenerativeEngine::updateParameters (juce::AudioProcessorValueTreeState& apv
     paramLeeward   = apvts.getRawParameterValue (ID::leeward)->load();
     paramBerth     = apvts.getRawParameterValue (ID::berth)->load();
     paramMaelstrom = apvts.getRawParameterValue (ID::maelstrom)->load();
+    generationEnabled = apvts.getRawParameterValue (ID::genEnabled)->load() >= 0.5f;
 
     // Update scale
     scaleQuantizer.setRootNote (rootNote);
@@ -93,6 +94,20 @@ void GenerativeEngine::processBlock (juce::MidiBuffer& midiBuffer, int numSample
     if (! isPlaying)
         return;
 
+    // If generation just got disabled, silence all voices
+    if (! generationEnabled && wasGenerationEnabled)
+    {
+        for (int i = 0; i < kMaxVoices; ++i)
+        {
+            if (voices[i].isNoteActive())
+                voices[i].reset();
+        }
+    }
+    wasGenerationEnabled = generationEnabled;
+
+    if (! generationEnabled)
+        return;
+
     double beatsPerSample = getBeatsPerSample (bpm);
     double secondsPerSample = 1.0 / sampleRate;
 
@@ -120,6 +135,20 @@ void GenerativeEngine::processBlock (juce::MidiBuffer& midiBuffer, int numSample
 
     // Advance internal clock
     internalBeatPosition += beatsPerSample * numSamples;
+}
+
+int GenerativeEngine::getVoiceNote (int index) const
+{
+    if (index >= 0 && index < kMaxVoices)
+        return voices[index].getCurrentNote();
+    return -1;
+}
+
+bool GenerativeEngine::isVoiceActive (int index) const
+{
+    if (index >= 0 && index < kMaxVoices)
+        return voices[index].isNoteActive();
+    return false;
 }
 
 void GenerativeEngine::updateVoiceParameters()

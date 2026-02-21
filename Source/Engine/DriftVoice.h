@@ -44,6 +44,8 @@ public:
     bool isNoteActive() const { return currentNote >= 0; }
 
     int getVoiceIndex() const { return voiceIdx; }
+    int getCurrentNote() const { return currentNote; }
+    int getCurrentVelocity() const { return currentVelocity; }
 
 private:
     int voiceIdx = 0;

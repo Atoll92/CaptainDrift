@@ -4,6 +4,7 @@
 #include "PluginProcessor.h"
 #include "GUI/DriftLookAndFeel.h"
 #include "GUI/DriftBackground.h"
+#include "GUI/MidiVisualizer.h"
 
 class CaptainDriftEditor : public juce::AudioProcessorEditor
 {
@@ -18,6 +19,13 @@ private:
     CaptainDriftProcessor& processor;
     DriftLookAndFeel driftLnf;
     DriftBackground background;
+
+    // --- On/Off toggle ---
+    juce::ToggleButton genToggle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> genToggleAtt;
+
+    // --- MIDI Visualizer ---
+    MidiVisualizer midiVisualizer;
 
     // --- Knobs ---
     // Navigation

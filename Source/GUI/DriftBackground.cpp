@@ -1,5 +1,6 @@
 #include "DriftBackground.h"
 #include "DriftLookAndFeel.h"
+#include "BinaryData.h"
 #include <cmath>
 
 #ifndef M_PI
@@ -9,18 +10,48 @@
 DriftBackground::DriftBackground()
 {
     setInterceptsMouseClicks (false, false);
+    backgroundImage = juce::ImageCache::getFromMemory (BinaryData::background_png,
+                                                        BinaryData::background_pngSize);
 }
 
 void DriftBackground::paint (juce::Graphics& g)
 {
     auto bounds = getLocalBounds().toFloat();
 
-    // --- Deep fog/mist gradient background ---
-    juce::ColourGradient bgGrad (DriftLookAndFeel::bgTop, 0, 0,
-                                  DriftLookAndFeel::bgBottom, 0, bounds.getHeight(), false);
-    bgGrad.addColour (0.5, DriftLookAndFeel::bgMid);
-    g.setGradientFill (bgGrad);
-    g.fillRect (bounds);
+    // --- Background image (if available and not just a placeholder) ---
+    if (backgroundImage.isValid() && backgroundImage.getWidth() > 1)
+    {
+        // Draw image covering the full area (cover mode)
+        auto imgAspect = (float) backgroundImage.getWidth() / (float) backgroundImage.getHeight();
+        auto boundsAspect = bounds.getWidth() / bounds.getHeight();
+
+        juce::Rectangle<float> drawArea;
+        if (boundsAspect > imgAspect)
+        {
+            float h = bounds.getWidth() / imgAspect;
+            drawArea = { 0, (bounds.getHeight() - h) * 0.5f, bounds.getWidth(), h };
+        }
+        else
+        {
+            float w = bounds.getHeight() * imgAspect;
+            drawArea = { (bounds.getWidth() - w) * 0.5f, 0, w, bounds.getHeight() };
+        }
+
+        g.drawImage (backgroundImage, drawArea);
+
+        // Dark overlay so controls remain readable
+        g.setColour (juce::Colour (0xcc0a0a1e));
+        g.fillRect (bounds);
+    }
+    else
+    {
+        // Fallback: original gradient background
+        juce::ColourGradient bgGrad (DriftLookAndFeel::bgTop, 0, 0,
+                                      DriftLookAndFeel::bgBottom, 0, bounds.getHeight(), false);
+        bgGrad.addColour (0.5, DriftLookAndFeel::bgMid);
+        g.setGradientFill (bgGrad);
+        g.fillRect (bounds);
+    }
 
     // --- Subtle horizontal fog bands ---
     for (int i = 0; i < 5; ++i)
@@ -37,12 +68,12 @@ void DriftBackground::paint (juce::Graphics& g)
     }
 
     // --- Compass rose watermark ---
-    drawCompassRose (g, bounds.getWidth() * 0.82f, bounds.getHeight() * 0.65f, 80.0f);
+    drawCompassRose (g, bounds.getWidth() * 0.82f, bounds.getHeight() * 0.55f, 80.0f);
 
     // --- Plugin title ---
     g.setColour (DriftLookAndFeel::textColour.withAlpha (0.9f));
     g.setFont (juce::Font (22.0f, juce::Font::bold));
-    g.drawText ("CAPTAIN DRIFT", bounds.removeFromTop (40.0f).reduced (15, 8),
+    g.drawText ("KIKINATOR", bounds.removeFromTop (40.0f).reduced (15, 8),
                 juce::Justification::centredLeft);
 
     // --- Subtitle ---
@@ -61,18 +92,19 @@ void DriftBackground::paint (juce::Graphics& g)
         g.drawLine (0, y, bounds.getWidth(), y, 0.5f);
 
     // --- Vignette ---
-    juce::ColourGradient vignetteTop (juce::Colour (0x40000000), bounds.getCentreX(), 0,
-                                       juce::Colours::transparentBlack, bounds.getCentreX(),
-                                       bounds.getHeight() * 0.1f, false);
+    auto fullBounds = getLocalBounds().toFloat();
+    juce::ColourGradient vignetteTop (juce::Colour (0x40000000), fullBounds.getCentreX(), 0,
+                                       juce::Colours::transparentBlack, fullBounds.getCentreX(),
+                                       fullBounds.getHeight() * 0.1f, false);
     g.setGradientFill (vignetteTop);
-    g.fillRect (getLocalBounds().toFloat());
+    g.fillRect (fullBounds);
 
-    juce::ColourGradient vignetteBot (juce::Colours::transparentBlack, bounds.getCentreX(),
-                                       bounds.getHeight() * 0.9f,
-                                       juce::Colour (0x50000000), bounds.getCentreX(),
-                                       bounds.getHeight(), false);
+    juce::ColourGradient vignetteBot (juce::Colours::transparentBlack, fullBounds.getCentreX(),
+                                       fullBounds.getHeight() * 0.9f,
+                                       juce::Colour (0x50000000), fullBounds.getCentreX(),
+                                       fullBounds.getHeight(), false);
     g.setGradientFill (vignetteBot);
-    g.fillRect (getLocalBounds().toFloat());
+    g.fillRect (fullBounds);
 }
 
 void DriftBackground::drawCompassRose (juce::Graphics& g, float cx, float cy, float size)

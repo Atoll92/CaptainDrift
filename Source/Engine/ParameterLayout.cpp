@@ -71,5 +71,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::NormalisableRange<float> (0.0f, 1.0f, 0.01f),
         0.2f));   // Randomness
 
+    // --- Generation on/off ---
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ID::genEnabled, 1 }, "Generate",
+        true));   // On by default
+
     return layout;
 }

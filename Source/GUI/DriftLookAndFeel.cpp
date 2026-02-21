@@ -104,3 +104,42 @@ void DriftLookAndFeel::drawLabel (juce::Graphics& g, juce::Label& label)
                       juce::jmax (1, (int) ((float) textArea.getHeight() / label.getFont().getHeight())),
                       label.getMinimumHorizontalScale());
 }
+
+void DriftLookAndFeel::drawToggleButton (juce::Graphics& g, juce::ToggleButton& button,
+                                          bool shouldDrawButtonAsHighlighted, bool /*shouldDrawButtonAsDown*/)
+{
+    auto bounds = button.getLocalBounds().toFloat().reduced (2.0f);
+    bool isOn = button.getToggleState();
+
+    // Background pill
+    float cornerSize = bounds.getHeight() * 0.5f;
+    g.setColour (isOn ? accent.withAlpha (0.3f) : knobBg);
+    g.fillRoundedRectangle (bounds, cornerSize);
+
+    // Border
+    g.setColour (isOn ? accent : knobTrack);
+    g.drawRoundedRectangle (bounds.reduced (0.5f), cornerSize, 1.0f);
+
+    // Hover highlight
+    if (shouldDrawButtonAsHighlighted)
+    {
+        g.setColour (juce::Colours::white.withAlpha (0.05f));
+        g.fillRoundedRectangle (bounds, cornerSize);
+    }
+
+    // Power icon (circle with line)
+    float iconSize = juce::jmin (bounds.getHeight() - 6, 16.0f);
+    float iconX = bounds.getX() + 6;
+    float iconCY = bounds.getCentreY();
+
+    g.setColour (isOn ? accent : textColour.withAlpha (0.4f));
+    g.drawEllipse (iconX, iconCY - iconSize * 0.5f, iconSize, iconSize, 1.5f);
+    g.drawLine (iconX + iconSize * 0.5f, iconCY - iconSize * 0.5f - 1,
+                iconX + iconSize * 0.5f, iconCY - iconSize * 0.1f, 1.5f);
+
+    // Label text
+    auto textBounds = bounds.withLeft (iconX + iconSize + 4).reduced (0, 1);
+    g.setColour (isOn ? textColour : textColour.withAlpha (0.4f));
+    g.setFont (juce::Font (11.0f, juce::Font::bold));
+    g.drawText (button.getButtonText(), textBounds, juce::Justification::centredLeft);
+}

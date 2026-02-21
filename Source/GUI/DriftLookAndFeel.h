@@ -21,4 +21,8 @@ public:
                            float rotaryEndAngle, juce::Slider& slider) override;
 
     void drawLabel (juce::Graphics& g, juce::Label& label) override;
+
+    void drawToggleButton (juce::Graphics& g, juce::ToggleButton& button,
+                           bool shouldDrawButtonAsHighlighted,
+                           bool shouldDrawButtonAsDown) override;
 };

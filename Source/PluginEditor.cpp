@@ -5,9 +5,17 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
     setLookAndFeel (&driftLnf);
-    setSize (700, 450);
+    setSize (700, 510);
 
     addAndMakeVisible (background);
+
+    // --- Generation on/off toggle ---
+    genToggle.setButtonText ("GEN");
+    addAndMakeVisible (genToggle);
+
+    // --- MIDI Visualizer ---
+    midiVisualizer.setVoiceNoteSource (processor.voiceNotes);
+    addAndMakeVisible (midiVisualizer);
 
     // --- Navigation group ---
     setupSectionLabel (navigationTitle, "NAVIGATION");
@@ -52,6 +60,8 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     leewardAtt   = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::leeward,   leewardKnob);
     berthAtt     = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::berth,     berthKnob);
     maelstromAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::maelstrom, maelstromKnob);
+
+    genToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::genEnabled, genToggle);
 }
 
 CaptainDriftEditor::~CaptainDriftEditor()
@@ -76,6 +86,9 @@ void CaptainDriftEditor::resized()
     const int padX = 15;
     const int padY = 10;
     const int colWidth = (bounds.getWidth() - padX * 4) / 3;
+
+    // --- On/Off toggle (top-right, in title bar area) ---
+    genToggle.setBounds (bounds.getWidth() - 90, 10, 75, 24);
 
     // --- Top row: Navigation | Rhythm | Dynamics ---
     int topY = padY + 35;  // Space for plugin title area
@@ -144,6 +157,11 @@ void CaptainDriftEditor::resized()
 
     maelstromKnob.setBounds (evoX + knobSpacing, botKnobY, knobSize, knobSize);
     maelstromLabel.setBounds (evoX + knobSpacing, botKnobY + knobSize, knobSize, labelH);
+
+    // --- MIDI Visualizer (bottom strip) ---
+    int vizH = 55;
+    int vizY = bounds.getHeight() - vizH - 8;
+    midiVisualizer.setBounds (padX, vizY, bounds.getWidth() - padX * 2, vizH);
 }
 
 void CaptainDriftEditor::setupKnob (juce::Slider& knob, juce::Label& label, const juce::String& text)
