@@ -1,4 +1,4 @@
-name: Build CaptainDrift
+name: Build Kikinator
 
 on:
   push:
@@ -23,14 +23,14 @@ jobs:
         shell: bash
         run: |
           mkdir -p staging
-          cp -r build/CaptainDrift_artefacts/Release/VST3/CaptainDrift.vst3 staging/
-          cd staging && 7z a -tzip ../CaptainDrift-Windows-VST3.zip CaptainDrift.vst3
+          cp -r build/Kikinator_artefacts/Release/VST3/Kikinator.vst3 staging/
+          cd staging && 7z a -tzip ../Kikinator-Windows-VST3.zip Kikinator.vst3
 
       - name: Upload Windows VST3
         uses: actions/upload-artifact@v4
         with:
-          name: CaptainDrift-Windows-VST3
-          path: CaptainDrift-Windows-VST3.zip
+          name: Kikinator-Windows-VST3
+          path: Kikinator-Windows-VST3.zip
 
   release:
     if: startsWith(github.ref, 'refs/tags/v')
@@ -42,7 +42,7 @@ jobs:
       - name: Download Windows artifact
         uses: actions/download-artifact@v4
         with:
-          name: CaptainDrift-Windows-VST3
+          name: Kikinator-Windows-VST3
 
       - name: List files
         run: ls -la
@@ -50,21 +50,16 @@ jobs:
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
-          name: CaptainDrift ${{ github.ref_name }}
+          name: Kikinator ${{ github.ref_name }}
           body: |
-            ## CaptainDrift ${{ github.ref_name }}
+            ## Kikinator ${{ github.ref_name }}
 
             Generative MIDI engine for infinite ambient pads.
-            Steve Reich-inspired phase-shifting with microtonal support.
 
             ### Installation
 
-            **Windows (VST3):** Unzip and copy the `CaptainDrift.vst3` folder to `C:\Program Files\Common Files\VST3\`
+            **Windows (VST3):** Unzip and copy the `Kikinator.vst3` folder to `C:\Program Files\Common Files\VST3\`
             Then rescan plugins in your DAW (Reaper, Ableton, Bitwig, etc.)
 
-            **macOS:** Build from source (see README) or use the locally built version.
-
-            ### Usage
-
-            CaptainDrift generates MIDI output. Route it to a synth plugin to hear the generated pads.
-          files: CaptainDrift-Windows-VST3.zip
+            **macOS:** Download the macOS builds from the [v1.1.0 release](https://github.com/Atoll92/CaptainDrift/releases/tag/v1.1.0), or build from source.
+          files: Kikinator-Windows-VST3.zip
