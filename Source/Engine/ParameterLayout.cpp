@@ -12,7 +12,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     layout.add (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { ID::chart, 1 }, "Chart",
         juce::StringArray { "Major", "Minor", "Dorian", "Mixolydian",
-                            "Pentatonic", "Whole Tone", "Chromatic" },
+                            "Pentatonic", "Whole Tone", "Chromatic",
+                            "In (Japanese)", "Hirajoshi" },
         0));
 
     layout.add (std::make_unique<juce::AudioParameterInt> (
@@ -22,13 +23,13 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
     // --- Rhythm ---
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::flotsam, 1 }, "Flotsam",
-        juce::NormalisableRange<float> (0.25f, 4.0f, 0.0f, 0.5f),
-        1.0f));   // Notes per bar
+        juce::NormalisableRange<float> (0.05f, 4.0f, 0.01f, 0.5f),
+        0.5f));   // Notes per bar (0.05 = very sparse, 4 = busy)
 
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::current, 1 }, "Current",
-        juce::NormalisableRange<float> (20.0f, 200.0f, 0.1f, 0.5f),
-        60.0f));   // Internal BPM
+        juce::NormalisableRange<float> (2.0f, 200.0f, 0.1f, 0.35f),
+        40.0f));   // Internal BPM (2–200, skewed toward slow tempos for ambient)
 
     layout.add (std::make_unique<juce::AudioParameterFloat> (
         juce::ParameterID { ID::doldrums, 1 }, "Doldrums",

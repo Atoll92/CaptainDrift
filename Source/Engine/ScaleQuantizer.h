@@ -14,6 +14,8 @@ public:
         Pentatonic,
         WholeTone,
         Chromatic,
+        InScale,       // Japanese In (陰) scale: C Db F G Ab
+        Hirajoshi,     // Hirajoshi scale: C D Eb G Ab
         NumScales
     };
 

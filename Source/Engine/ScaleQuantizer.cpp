@@ -109,6 +109,8 @@ const std::vector<int>& ScaleQuantizer::getScaleIntervals (Scale scale)
     static const std::vector<int> pentatonic = { 0, 2, 4, 7, 9 };
     static const std::vector<int> wholeTone  = { 0, 2, 4, 6, 8, 10 };
     static const std::vector<int> chromatic  = { 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+    static const std::vector<int> inScale    = { 0, 1, 5, 7, 8 };       // In (陰): C Db F G Ab
+    static const std::vector<int> hirajoshi  = { 0, 2, 3, 7, 8 };       // Hirajoshi: C D Eb G Ab
 
     switch (scale)
     {
@@ -119,6 +121,8 @@ const std::vector<int>& ScaleQuantizer::getScaleIntervals (Scale scale)
         case Pentatonic:  return pentatonic;
         case WholeTone:   return wholeTone;
         case Chromatic:   return chromatic;
+        case InScale:     return inScale;
+        case Hirajoshi:   return hirajoshi;
         default:          return major;
     }
 }

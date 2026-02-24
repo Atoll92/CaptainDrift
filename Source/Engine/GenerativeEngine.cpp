@@ -162,6 +162,7 @@ void GenerativeEngine::updateVoiceParameters()
     // Modulate parameters with evolution curves
     // Evolution adds ±30% variation to base values
     float densityMod = paramFlotsam * (0.7f + 0.6f * evoD);
+    if (densityMod < 0.01f) densityMod = 0.01f;
     float velocityMod = paramGale * (0.7f + 0.6f * evoV);
 
     // Evolution can shift octave range by ±1
