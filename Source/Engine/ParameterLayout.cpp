@@ -77,5 +77,10 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ID::genEnabled, 1 }, "Generate",
         true));   // On by default
 
+    // --- Drone mode ---
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ID::droneMode, 1 }, "Drone",
+        false));   // Off by default
+
     return layout;
 }
