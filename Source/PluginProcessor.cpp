@@ -56,6 +56,10 @@ void CaptainDriftProcessor::processBlock (juce::AudioBuffer<float>& buffer,
     // Update engine parameters from APVTS
     engine.updateParameters (apvts);
 
+    // Pass drone mode to the synth
+    bool drone = apvts.getRawParameterValue (ID::droneMode)->load() >= 0.5f;
+    padSynth.setDroneMode (drone);
+
     // Generate MIDI events
     engine.processBlock (midiMessages, buffer.getNumSamples(), getPlayHead());
 

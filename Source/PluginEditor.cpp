@@ -13,6 +13,10 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     genToggle.setButtonText ("GEN");
     addAndMakeVisible (genToggle);
 
+    // --- Drone mode toggle ---
+    droneToggle.setButtonText ("DRONE");
+    addAndMakeVisible (droneToggle);
+
     // --- MIDI Visualizer ---
     midiVisualizer.setVoiceNoteSource (processor.voiceNotes);
     addAndMakeVisible (midiVisualizer);
@@ -62,6 +66,7 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     maelstromAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::maelstrom, maelstromKnob);
 
     genToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::genEnabled, genToggle);
+    droneToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::droneMode, droneToggle);
 }
 
 CaptainDriftEditor::~CaptainDriftEditor()
@@ -89,6 +94,7 @@ void CaptainDriftEditor::resized()
 
     // --- On/Off toggle (top-right, in title bar area) ---
     genToggle.setBounds (bounds.getWidth() - 90, 10, 75, 24);
+    droneToggle.setBounds (bounds.getWidth() - 180, 10, 85, 24);
 
     // --- Top row: Navigation | Rhythm | Dynamics ---
     int topY = padY + 35;  // Space for plugin title area

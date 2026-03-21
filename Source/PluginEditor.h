@@ -24,6 +24,10 @@ private:
     juce::ToggleButton genToggle;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> genToggleAtt;
 
+    // --- Drone mode toggle ---
+    juce::ToggleButton droneToggle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> droneToggleAtt;
+
     // --- MIDI Visualizer ---
     MidiVisualizer midiVisualizer;
 

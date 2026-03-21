@@ -30,6 +30,11 @@ void PadSynth::reset()
     channelPitchBend.fill (1.0);
 }
 
+void PadSynth::setDroneMode (bool enabled)
+{
+    droneEnabled = enabled;
+}
+
 void PadSynth::processBlock (juce::AudioBuffer<float>& audioBuffer,
                               const juce::MidiBuffer& midiBuffer)
 {
@@ -73,12 +78,15 @@ void PadSynth::processBlock (juce::AudioBuffer<float>& audioBuffer,
             }
         }
 
-        // Simple one-pole lowpass for warmth (cutoff ~3kHz)
-        float lpCoeff = 1.0f - std::exp (-2.0f * static_cast<float> (M_PI) * 3000.0f / static_cast<float> (sampleRate));
+        // Simple one-pole lowpass for warmth
+        // Drone mode: darker cutoff (~800 Hz) for deep warmth
+        float lpCutoff = droneEnabled ? 800.0f : 3000.0f;
+        float lpCoeff = 1.0f - std::exp (-2.0f * static_cast<float> (M_PI) * lpCutoff / static_cast<float> (sampleRate));
         lpState[0] += lpCoeff * (monoSample - lpState[0]);
 
-        // Soft clip
-        float out = std::tanh (lpState[0] * 0.7f);
+        // Soft clip (lower gain in drone mode for gentler output)
+        float gainMul = droneEnabled ? 0.45f : 0.7f;
+        float out = std::tanh (lpState[0] * gainMul);
 
         // Write to all output channels
         for (int ch = 0; ch < numChannels; ++ch)
@@ -160,6 +168,7 @@ void PadSynth::noteOn (int channel, int note, float velocity)
         freeVoice->phase2 = 0.0;
         freeVoice->phase3 = 0.0;
         freeVoice->phase4 = 0.0;
+        freeVoice->phase5 = 0.0;
         freeVoice->envelope = 0.0f;
     }
 
@@ -205,39 +214,56 @@ float PadSynth::renderVoice (SynthVoice& voice)
     double inc2 = freq * detuneUp / sampleRate;
     double inc3 = freq * detuneDown / sampleRate;
     double inc4 = (freq * 0.5) / sampleRate;   // Sub octave
+    double inc5 = (freq * 1.5) / sampleRate;   // Perfect fifth (drone harmonic)
 
     // Advance phases
     voice.phase1 += inc1;
     voice.phase2 += inc2;
     voice.phase3 += inc3;
     voice.phase4 += inc4;
+    voice.phase5 += inc5;
 
     if (voice.phase1 >= 1.0) voice.phase1 -= 1.0;
     if (voice.phase2 >= 1.0) voice.phase2 -= 1.0;
     if (voice.phase3 >= 1.0) voice.phase3 -= 1.0;
     if (voice.phase4 >= 1.0) voice.phase4 -= 1.0;
+    if (voice.phase5 >= 1.0) voice.phase5 -= 1.0;
 
     // Generate waveforms (sine for smooth pad sound)
     float osc1 = static_cast<float> (std::sin (2.0 * M_PI * voice.phase1));
     float osc2 = static_cast<float> (std::sin (2.0 * M_PI * voice.phase2));
     float osc3 = static_cast<float> (std::sin (2.0 * M_PI * voice.phase3));
     float osc4 = static_cast<float> (std::sin (2.0 * M_PI * voice.phase4));
+    float osc5 = static_cast<float> (std::sin (2.0 * M_PI * voice.phase5));
 
-    // Mix: main + detuned + sub
-    float mix = osc1 * 0.4f + osc2 * 0.2f + osc3 * 0.2f + osc4 * 0.2f;
+    // Mix: main + detuned + sub, plus quiet fifth harmonic in drone mode
+    float mix;
+    if (droneEnabled)
+    {
+        // Drone: more sub, add fifth harmonic, wider detuning presence
+        mix = osc1 * 0.3f + osc2 * 0.2f + osc3 * 0.2f + osc4 * 0.2f + osc5 * 0.1f;
+    }
+    else
+    {
+        mix = osc1 * 0.4f + osc2 * 0.2f + osc3 * 0.2f + osc4 * 0.2f;
+    }
+
+    // Select envelope rates based on drone mode
+    float attackRate  = droneEnabled ? kDroneAttackRate  : kAttackRate;
+    float releaseRate = droneEnabled ? kDroneReleaseRate : kReleaseRate;
 
     // Update envelope
     if (! voice.releasing)
     {
         // Attack
-        voice.envelope += kAttackRate;
+        voice.envelope += attackRate;
         if (voice.envelope > 1.0f)
             voice.envelope = 1.0f;
     }
     else
     {
         // Release
-        voice.releasePhase += kReleaseRate;
+        voice.releasePhase += releaseRate;
         if (voice.releasePhase >= 1.0f)
         {
             voice.envelope = 0.0f;

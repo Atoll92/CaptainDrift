@@ -17,6 +17,7 @@ namespace ID
     inline constexpr const char* berth     = "berth";      // Evolution depth
     inline constexpr const char* maelstrom = "maelstrom";  // Randomness amount
     inline constexpr const char* genEnabled = "genEnabled"; // Generation on/off
+    inline constexpr const char* droneMode = "droneMode";   // Drone mode on/off
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();

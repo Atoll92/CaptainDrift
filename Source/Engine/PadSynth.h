@@ -23,6 +23,9 @@ public:
     void prepare (double sampleRate, int blockSize);
     void reset();
 
+    /** Enable/disable drone mode (ultra-slow envelopes, dark filter, harmonic fifth). */
+    void setDroneMode (bool enabled);
+
     /** Process MIDI events and generate audio into the buffer. */
     void processBlock (juce::AudioBuffer<float>& audioBuffer,
                        const juce::MidiBuffer& midiBuffer);
@@ -40,6 +43,7 @@ private:
         double phase2 = 0.0;   // Detuned sine +
         double phase3 = 0.0;   // Detuned sine -
         double phase4 = 0.0;   // Sub octave
+        double phase5 = 0.0;   // Perfect fifth harmonic (drone mode)
 
         // Frequency
         double baseFreq = 440.0;
@@ -62,9 +66,17 @@ private:
     // Simple lowpass state for warmth
     float lpState[2] = { 0.0f, 0.0f };
 
-    // Envelope parameters
+    // Drone mode state
+    bool droneEnabled = false;
+
+    // Envelope parameters — normal mode
     static constexpr float kAttackRate  = 0.0003f;   // Slow attack (~3s to full)
     static constexpr float kReleaseRate = 0.0001f;    // Very slow release (~10s)
+
+    // Envelope parameters — drone mode (ultra-slow for crossfading tones)
+    static constexpr float kDroneAttackRate  = 0.000015f;  // ~15s attack
+    static constexpr float kDroneReleaseRate = 0.000008f;  // ~30s release
+
     static constexpr float kDetuneCents = 8.0f;       // Detune amount
 
     void noteOn (int channel, int note, float velocity);

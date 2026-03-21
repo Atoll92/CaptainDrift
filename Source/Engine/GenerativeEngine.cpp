@@ -46,15 +46,17 @@ void GenerativeEngine::updateParameters (juce::AudioProcessorValueTreeState& apv
     paramBerth     = apvts.getRawParameterValue (ID::berth)->load();
     paramMaelstrom = apvts.getRawParameterValue (ID::maelstrom)->load();
     generationEnabled = apvts.getRawParameterValue (ID::genEnabled)->load() >= 0.5f;
+    droneMode = apvts.getRawParameterValue (ID::droneMode)->load() >= 0.5f;
 
     // Update scale
     scaleQuantizer.setRootNote (rootNote);
     scaleQuantizer.setScale (scaleIdx);
 
-    // Update evolution depth
-    evolutionDensity.setDepth (paramBerth);
-    evolutionVelocity.setDepth (paramBerth);
-    evolutionOctave.setDepth (paramBerth);
+    // Update evolution depth (drone mode forces high evolution for slow breathing)
+    float evoDepth = droneMode ? 0.9f : paramBerth;
+    evolutionDensity.setDepth (evoDepth);
+    evolutionVelocity.setDepth (evoDepth);
+    evolutionOctave.setDepth (evoDepth);
 
     // Internal BPM from the Current parameter
     internalBPM = paramCurrent;
@@ -172,16 +174,26 @@ void GenerativeEngine::updateVoiceParameters()
     if (modDepths <= modShallows)
         modDepths = modShallows + 1;
 
+    // In drone mode, override parameters for slow-evolving sustained tones
+    float density   = droneMode ? 0.02f  : densityMod;
+    float legato    = droneMode ? 1.0f   : paramDoldrums;
+    float velRange  = droneMode ? 0.1f   : velocityMod;
+    int   octLo     = droneMode ? 3      : modShallows;
+    int   octHi     = droneMode ? 4      : modDepths;
+    float drift     = droneMode ? 0.8f   : paramSargasso;
+    float micro     = droneMode ? 25.0f  : paramLeeward;
+    float chaos     = droneMode ? 0.08f  : paramMaelstrom;
+
     for (int i = 0; i < kMaxVoices; ++i)
     {
         voices[i].setScaleQuantizer (&scaleQuantizer);
-        voices[i].setNoteDensity (densityMod);
-        voices[i].setLegatoFactor (paramDoldrums);
-        voices[i].setVelocityRange (velocityMod);
-        voices[i].setOctaveRange (modShallows, modDepths);
-        voices[i].setPhaseDrift (paramSargasso);
-        voices[i].setMicrotonalDepth (paramLeeward);
-        voices[i].setRandomness (paramMaelstrom);
+        voices[i].setNoteDensity (density);
+        voices[i].setLegatoFactor (legato);
+        voices[i].setVelocityRange (velRange);
+        voices[i].setOctaveRange (octLo, octHi);
+        voices[i].setPhaseDrift (drift);
+        voices[i].setMicrotonalDepth (micro);
+        voices[i].setRandomness (chaos);
     }
 }
 

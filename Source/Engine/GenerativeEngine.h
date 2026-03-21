@@ -58,6 +58,7 @@ private:
     bool wasPlaying = false;
     bool generationEnabled = true;
     bool wasGenerationEnabled = true;
+    bool droneMode = false;
 
     // Cached parameters
     float paramFlotsam = 1.0f;
