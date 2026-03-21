@@ -17,6 +17,10 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     droneToggle.setButtonText ("DRONE");
     addAndMakeVisible (droneToggle);
 
+    // --- Crew drift toggle ---
+    crewDriftToggle.setButtonText ("DRIFT");
+    addAndMakeVisible (crewDriftToggle);
+
     // --- MIDI Visualizer ---
     midiVisualizer.setVoiceNoteSource (processor.voiceNotes);
     addAndMakeVisible (midiVisualizer);
@@ -75,6 +79,7 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
 
     genToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::genEnabled, genToggle);
     droneToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::droneMode, droneToggle);
+    crewDriftToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::crewDrift, crewDriftToggle);
 }
 
 CaptainDriftEditor::~CaptainDriftEditor()
@@ -100,9 +105,10 @@ void CaptainDriftEditor::resized()
     const int padY = 10;
     const int colWidth = (bounds.getWidth() - padX * 4) / 3;
 
-    // --- On/Off toggle (top-right, in title bar area) ---
+    // --- On/Off toggles (top-right, in title bar area) ---
     genToggle.setBounds (bounds.getWidth() - 90, 10, 75, 24);
     droneToggle.setBounds (bounds.getWidth() - 180, 10, 85, 24);
+    crewDriftToggle.setBounds (bounds.getWidth() - 265, 10, 80, 24);
 
     // --- Top row: Navigation | Rhythm | Dynamics ---
     int topY = padY + 35;  // Space for plugin title area

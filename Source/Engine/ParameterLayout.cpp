@@ -82,6 +82,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout()
         juce::ParameterID { ID::droneMode, 1 }, "Drone",
         false));   // Off by default
 
+    // --- Crew Drift ---
+    layout.add (std::make_unique<juce::AudioParameterBool> (
+        juce::ParameterID { ID::crewDrift, 1 }, "Crew Drift",
+        false));   // Off by default
+
     // --- Scale Link ---
     layout.add (std::make_unique<juce::AudioParameterChoice> (
         juce::ParameterID { ID::linkGroup, 1 }, "Link Group",

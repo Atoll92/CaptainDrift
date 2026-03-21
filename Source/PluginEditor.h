@@ -28,6 +28,10 @@ private:
     juce::ToggleButton droneToggle;
     std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> droneToggleAtt;
 
+    // --- Crew drift toggle ---
+    juce::ToggleButton crewDriftToggle;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::ButtonAttachment> crewDriftToggleAtt;
+
     // --- MIDI Visualizer ---
     MidiVisualizer midiVisualizer;
 

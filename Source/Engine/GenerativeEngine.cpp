@@ -54,6 +54,7 @@ void GenerativeEngine::updateParameters (juce::AudioProcessorValueTreeState& apv
     paramMaelstrom = apvts.getRawParameterValue (ID::maelstrom)->load();
     generationEnabled = apvts.getRawParameterValue (ID::genEnabled)->load() >= 0.5f;
     droneMode = apvts.getRawParameterValue (ID::droneMode)->load() >= 0.5f;
+    crewDriftEnabled = apvts.getRawParameterValue (ID::crewDrift)->load() >= 0.5f;
     linkGroup = static_cast<int> (apvts.getRawParameterValue (ID::linkGroup)->load());
     linkRole  = static_cast<int> (apvts.getRawParameterValue (ID::linkRole)->load());
 
@@ -148,6 +149,24 @@ void GenerativeEngine::processBlock (juce::MidiBuffer& midiBuffer, int numSample
     double beatsPerSample = getBeatsPerSample (bpm);
     double secondsPerSample = 1.0 / sampleRate;
 
+    // --- Crew Drift: slowly wander the voice count ---
+    if (crewDriftEnabled)
+    {
+        crewDriftTimer += secondsPerSample * numSamples;
+        if (crewDriftTimer >= crewDriftInterval)
+        {
+            pickNewCrewDriftTarget (activeVoiceCount);
+            crewDriftTimer = 0.0;
+        }
+        activeVoiceCount = crewDriftTarget;
+    }
+    else
+    {
+        // When drift is off, sync target to knob so re-enabling starts from current value
+        crewDriftTarget = activeVoiceCount;
+        crewDriftTimer = 0.0;
+    }
+
     // Process each active voice
     for (int i = 0; i < activeVoiceCount && i < kMaxVoices; ++i)
     {
@@ -230,6 +249,24 @@ void GenerativeEngine::updateVoiceParameters()
         voices[i].setMicrotonalDepth (micro);
         voices[i].setRandomness (chaos);
     }
+}
+
+void GenerativeEngine::pickNewCrewDriftTarget (int userCrew)
+{
+    // Bias toward ±1 (70%) vs ±2 (30%) for gentle wandering
+    std::uniform_int_distribution<int> coinDist (0, 9);
+    int coin = coinDist (crewDriftRng);
+
+    int maxStep = (coin < 7) ? 1 : 2;
+    std::uniform_int_distribution<int> stepDist (-maxStep, maxStep);
+    int step = stepDist (crewDriftRng);
+
+    // Apply step relative to user's knob value (gravity center)
+    crewDriftTarget = juce::jlimit (1, kMaxVoices, userCrew + step);
+
+    // Pick next interval: 30–60 seconds
+    std::uniform_real_distribution<double> intervalDist (30.0, 60.0);
+    crewDriftInterval = intervalDist (crewDriftRng);
 }
 
 double GenerativeEngine::getBeatsPerSample (float bpm) const

@@ -5,6 +5,7 @@
 #include "ScaleQuantizer.h"
 #include "EvolutionCurve.h"
 #include "SharedScaleState.h"
+#include <random>
 
 /**
  * GenerativeEngine — Master coordinator for Captain Drift.
@@ -64,6 +65,15 @@ private:
     int  linkGroup = 0;        // 0 = unlinked, 1–4 = group
     int  linkRole  = 0;        // 0 = master, 1 = follower
     int  lastPublishedGroup = 0;  // Track previous group for cleanup
+
+    // Crew drift state
+    bool crewDriftEnabled = false;
+    double crewDriftTimer = 0.0;        // Seconds since last change
+    double crewDriftInterval = 40.0;    // Seconds until next change
+    int    crewDriftTarget = 4;         // Current drifted crew count
+    std::mt19937 crewDriftRng { 12345 };
+
+    void pickNewCrewDriftTarget (int userCrew);
 
     // Cached parameters
     float paramFlotsam = 1.0f;
