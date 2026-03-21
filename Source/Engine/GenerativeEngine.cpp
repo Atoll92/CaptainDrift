@@ -13,6 +13,13 @@ GenerativeEngine::GenerativeEngine()
     evolutionOctave.setSeed (3);
 }
 
+GenerativeEngine::~GenerativeEngine()
+{
+    // Clean up shared state when instance is destroyed
+    if (lastPublishedGroup > 0)
+        SharedScaleState::getInstance().unpublish (lastPublishedGroup);
+}
+
 void GenerativeEngine::prepare (double newSampleRate, int /*blockSize*/)
 {
     sampleRate = newSampleRate;
@@ -47,8 +54,36 @@ void GenerativeEngine::updateParameters (juce::AudioProcessorValueTreeState& apv
     paramMaelstrom = apvts.getRawParameterValue (ID::maelstrom)->load();
     generationEnabled = apvts.getRawParameterValue (ID::genEnabled)->load() >= 0.5f;
     droneMode = apvts.getRawParameterValue (ID::droneMode)->load() >= 0.5f;
+    linkGroup = static_cast<int> (apvts.getRawParameterValue (ID::linkGroup)->load());
+    linkRole  = static_cast<int> (apvts.getRawParameterValue (ID::linkRole)->load());
 
-    // Update scale
+    // --- Scale Link: master publishes, follower overrides ---
+    auto& shared = SharedScaleState::getInstance();
+
+    // Clean up if we changed groups or went to unlinked
+    if (lastPublishedGroup != 0 && lastPublishedGroup != linkGroup)
+        shared.unpublish (lastPublishedGroup);
+    lastPublishedGroup = (linkRole == 0) ? linkGroup : 0;
+
+    if (linkGroup > 0)
+    {
+        if (linkRole == 0) // Master: publish our scale
+        {
+            shared.publish (linkGroup, rootNote, scaleIdx);
+        }
+        else // Follower: read master's scale
+        {
+            int masterRoot = 0, masterScale = 0;
+            if (shared.subscribe (linkGroup, masterRoot, masterScale))
+            {
+                rootNote = masterRoot;
+                scaleIdx = masterScale;
+            }
+            // If no master active, keep our own scale (graceful fallback)
+        }
+    }
+
+    // Update scale (possibly overridden by master)
     scaleQuantizer.setRootNote (rootNote);
     scaleQuantizer.setScale (scaleIdx);
 
@@ -175,7 +210,7 @@ void GenerativeEngine::updateVoiceParameters()
         modDepths = modShallows + 1;
 
     // In drone mode, override parameters for slow-evolving sustained tones
-    float density   = droneMode ? 0.02f  : densityMod;
+    float density   = droneMode ? 0.18f  : densityMod;
     float legato    = droneMode ? 1.0f   : paramDoldrums;
     float velRange  = droneMode ? 0.1f   : velocityMod;
     int   octLo     = droneMode ? 3      : modShallows;

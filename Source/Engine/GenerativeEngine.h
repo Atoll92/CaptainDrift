@@ -4,6 +4,7 @@
 #include "DriftVoice.h"
 #include "ScaleQuantizer.h"
 #include "EvolutionCurve.h"
+#include "SharedScaleState.h"
 
 /**
  * GenerativeEngine — Master coordinator for Captain Drift.
@@ -18,6 +19,7 @@ public:
     static constexpr int kMaxVoices = 8;
 
     GenerativeEngine();
+    ~GenerativeEngine();
 
     /** Prepare the engine for playback. */
     void prepare (double sampleRate, int blockSize);
@@ -59,6 +61,9 @@ private:
     bool generationEnabled = true;
     bool wasGenerationEnabled = true;
     bool droneMode = false;
+    int  linkGroup = 0;        // 0 = unlinked, 1–4 = group
+    int  linkRole  = 0;        // 0 = master, 1 = follower
+    int  lastPublishedGroup = 0;  // Track previous group for cleanup
 
     // Cached parameters
     float paramFlotsam = 1.0f;

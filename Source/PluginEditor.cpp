@@ -5,7 +5,7 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     : AudioProcessorEditor (&p), processor (p)
 {
     setLookAndFeel (&driftLnf);
-    setSize (700, 510);
+    setSize (700, 560);
 
     addAndMakeVisible (background);
 
@@ -49,6 +49,11 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     setupKnob (berthKnob,     berthLabel,     "Berth");
     setupKnob (maelstromKnob, maelstromLabel, "Maelstrom");
 
+    // --- Scale Link group ---
+    setupSectionLabel (linkTitle, "SCALE LINK");
+    setupKnob (linkGroupKnob, linkGroupLabel, "Group");
+    setupKnob (linkRoleKnob,  linkRoleLabel,  "Role");
+
     // --- Attachments ---
     auto& apvts = processor.apvts;
     headingAtt   = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::heading,   headingKnob);
@@ -64,6 +69,9 @@ CaptainDriftEditor::CaptainDriftEditor (CaptainDriftProcessor& p)
     leewardAtt   = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::leeward,   leewardKnob);
     berthAtt     = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::berth,     berthKnob);
     maelstromAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::maelstrom, maelstromKnob);
+
+    linkGroupAtt = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::linkGroup, linkGroupKnob);
+    linkRoleAtt  = std::make_unique<juce::AudioProcessorValueTreeState::SliderAttachment> (apvts, ID::linkRole,  linkRoleKnob);
 
     genToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::genEnabled, genToggle);
     droneToggleAtt = std::make_unique<juce::AudioProcessorValueTreeState::ButtonAttachment> (apvts, ID::droneMode, droneToggle);
@@ -163,6 +171,16 @@ void CaptainDriftEditor::resized()
 
     maelstromKnob.setBounds (evoX + knobSpacing, botKnobY, knobSize, knobSize);
     maelstromLabel.setBounds (evoX + knobSpacing, botKnobY + knobSize, knobSize, labelH);
+
+    // --- Scale Link section (right of Evolution, same row) ---
+    int linkX = evoX + knobSpacing * 2 + 20;
+    linkTitle.setBounds (linkX, botY, 120, sectionLabelH);
+
+    linkGroupKnob.setBounds (linkX, botKnobY, knobSize, knobSize);
+    linkGroupLabel.setBounds (linkX, botKnobY + knobSize, knobSize, labelH);
+
+    linkRoleKnob.setBounds (linkX + knobSpacing, botKnobY, knobSize, knobSize);
+    linkRoleLabel.setBounds (linkX + knobSpacing, botKnobY + knobSize, knobSize, labelH);
 
     // --- MIDI Visualizer (bottom strip) ---
     int vizH = 55;

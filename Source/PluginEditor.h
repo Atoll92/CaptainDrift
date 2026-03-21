@@ -50,6 +50,11 @@ private:
     juce::Label sargassoLabel, leewardLabel;
     juce::Label berthLabel, maelstromLabel;
 
+    // --- Scale Link ---
+    juce::Slider linkGroupKnob, linkRoleKnob;
+    juce::Label  linkGroupLabel, linkRoleLabel;
+    juce::Label  linkTitle;
+
     // Section labels
     juce::Label navigationTitle, rhythmTitle, dynamicsTitle, driftTitle, evolutionTitle;
 
@@ -59,6 +64,7 @@ private:
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> galeAtt, shallowsAtt, depthsAtt;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> sargassoAtt, leewardAtt;
     std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> berthAtt, maelstromAtt;
+    std::unique_ptr<juce::AudioProcessorValueTreeState::SliderAttachment> linkGroupAtt, linkRoleAtt;
 
     // Helpers
     void setupKnob (juce::Slider& knob, juce::Label& label, const juce::String& text);

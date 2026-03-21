@@ -18,6 +18,8 @@ namespace ID
     inline constexpr const char* maelstrom = "maelstrom";  // Randomness amount
     inline constexpr const char* genEnabled = "genEnabled"; // Generation on/off
     inline constexpr const char* droneMode = "droneMode";   // Drone mode on/off
+    inline constexpr const char* linkGroup = "linkGroup";   // Scale-link group (0=off, 1-4)
+    inline constexpr const char* linkRole  = "linkRole";    // 0=master, 1=follower
 }
 
 juce::AudioProcessorValueTreeState::ParameterLayout createParameterLayout();
